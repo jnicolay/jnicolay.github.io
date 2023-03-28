@@ -1,33 +1,71 @@
-<html lang="de">
-
+<!DOCTYPE html>
+<html>
   <head>
-    <title>Mein Lebenslauf</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="utf-8">
+    <title>AR Hand Detection</title>
+    <style>
+      #canvas {
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -1;
+      }
+    </style>
   </head>
-<!--Ich bin ein Kommentar Ab hier ist der sichtbare Teil meiner Webseite-->
   <body>
-    <div class="boxen-nebeneinander">
-      <h1>Lebenslauf</h1>
-    </div>
-    <div class="boxen-nebeneinander">
-      <img src="bewerbungsfoto.png" width="25%">
-<!-- Das Bild muss immer im selben Ordner liegen wie die HTML-Datei! Oder: Pfad angeben! -->
-    </div>
-    <p>Hallo, ich möchte mich gerne einmal vorstellen... ...</p>
+    <canvas id="canvas"></canvas>
 
-    <table>
-      <tr>
-        <td>Name: </td><td>Jennifer Nicolay</td>
-      </tr>
-      <tr>
-        <td>Geburtsort: </td><td>Düsseldorf</td>
-      </tr>
-    </table>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.130.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handtrackjs@1.0.0/dist/handtrack.min.js"></script>
+    <script>
+      // Set up the scene and camera
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 5;
 
+      // Create a box geometry and material
+      const geometry = new THREE.BoxGeometry();
+      const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
+      // Create a mesh object and add it to the scene
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
 
+      // Set up the renderer and add it to the page
+      const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("canvas") });
+      renderer.setSize(window.innerWidth, window.innerHeight);
 
+      // Set up the hand detection model
+      const modelParams = {
+        flipHorizontal: true,
+        imageScaleFactor: 0.7,
+        maxNumBoxes: 1,
+        iouThreshold: 0.5,
+        scoreThreshold: 0.7
+      };
+      const model = new HandDetector(modelParams);
+      model.load();
 
+      // Update the mesh position based on hand movement
+      async function update() {
+        const video = document.getElementsByTagName("video")[0];
+        const predictions = await model.detect(video);
+        if (predictions.length > 0) {
+          const hand = predictions[0].bbox;
+          mesh.position.x = (hand[0] + hand[2] / 2) / window.innerWidth * 2 - 1;
+          mesh.position.y = -(hand[1] + hand[3] / 2) / window.innerHeight * 2 + 1;
+        }
+      }
 
+      // Render the scene on each frame
+      function animate() {
+        requestAnimationFrame(animate);
+        update();
+        renderer.render(scene, camera);
+      }
+      animate();
+    </script>
   </body>
 </html>

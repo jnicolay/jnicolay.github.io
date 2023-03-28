@@ -26,12 +26,22 @@
       camera.position.z = 5;
 
       // Create a box geometry and material
-      const geometry = new THREE.BoxGeometry();
-      const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      //const geometry = new THREE.BoxGeometry();
+      //const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
       // Create a mesh object and add it to the scene
-      const mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
+      //const mesh = new THREE.Mesh(geometry, material);
+      //scene.add(mesh);
+
+// Load the OBJ model
+const loader = new THREE.OBJLoader();
+loader.load('path/to/your/model.obj', function (object) {
+  // Set the mesh to the first object in the OBJ file
+  mesh = object.children[0];
+  // Add the mesh to the scene
+  scene.add(mesh);
+});
+
 
       // Set up the renderer and add it to the page
       const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("canvas") });
